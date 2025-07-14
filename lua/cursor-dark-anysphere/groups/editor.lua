@@ -138,6 +138,10 @@ function M.setup(c, config)
         IblWhitespace = { fg = c.editorIndentGuide_bg, nocombine = true },
         IblScope = { fg = c.gray3, nocombine = true },
         
+        -- Snacks indent guides
+        SnacksIndent = { fg = c.editorIndentGuide_bg, nocombine = true },
+        SnacksIndentScope = { fg = c.gray3, nocombine = true },
+        
         -- Winbar
         WinBar = { fg = c.editor_fg, bg = transparent_bg or c.editor_bg },
         WinBarNC = { fg = c.gray7, bg = transparent_bg or c.editor_bg },
