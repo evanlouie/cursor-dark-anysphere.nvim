@@ -323,6 +323,52 @@ function M.setup(c, config)
         groups.MiniFilesCursorLine = { bg = c.list_active_selection_bg }
     end
     
+    -- snacks.nvim
+    if config.plugins.snacks then
+        -- Picker/Explorer highlights (used by snacks explorer)
+        groups.SnacksPickerFile = { fg = c.sidebar_fg }
+        groups.SnacksPickerDir = { fg = c.blue2, bold = true }
+        groups.SnacksPickerPathHidden = { fg = c.gray4 }
+        groups.SnacksPickerPathIgnored = { fg = c.gray3 }
+        groups.SnacksPickerGitStatusUntracked = { fg = c.green1 }
+        groups.SnacksPickerGitStatusModified = { fg = c.yellow1 }
+        groups.SnacksPickerGitStatusDeleted = { fg = c.red1 }
+        groups.SnacksPickerGitStatusStaged = { fg = c.green1 }
+        groups.SnacksPickerGitStatusRenamed = { fg = c.cyan }
+        groups.SnacksPickerGitStatusAdded = { fg = c.green1 }
+        
+        -- Explorer specific highlights
+        groups.SnacksExplorerFile = { fg = c.sidebar_fg }
+        groups.SnacksExplorerDir = { fg = c.blue2, bold = true }
+        groups.SnacksExplorerNormal = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
+        groups.SnacksExplorerTitle = { fg = c.white, bold = true }
+        groups.SnacksExplorerBorder = { fg = c.sidebar_border }
+        
+        -- Dashboard highlights
+        groups.SnacksDashboardNormal = { fg = c.editor_fg, bg = config.transparencies.floats and "NONE" or c.ui_bg }
+        groups.SnacksDashboardDesc = { fg = c.blue2 }
+        groups.SnacksDashboardFile = { fg = c.sidebar_fg }
+        groups.SnacksDashboardDir = { fg = c.blue2 }
+        groups.SnacksDashboardFooter = { fg = c.gray4 }
+        groups.SnacksDashboardHeader = { fg = c.white, bold = true }
+        groups.SnacksDashboardIcon = { fg = c.blue2 }
+        groups.SnacksDashboardKey = { fg = c.yellow2 }
+        groups.SnacksDashboardTerminal = { fg = c.terminal_fg }
+        groups.SnacksDashboardSpecial = { fg = c.purple2 }
+        
+        -- Notification highlights
+        groups.SnacksNotifierInfo = { fg = c.blue2 }
+        groups.SnacksNotifierWarn = { fg = c.yellow1 }
+        groups.SnacksNotifierError = { fg = c.red1 }
+        groups.SnacksNotifierDebug = { fg = c.gray4 }
+        groups.SnacksNotifierTrace = { fg = c.purple2 }
+        
+        -- Input highlights
+        groups.SnacksInputNormal = { fg = c.editor_fg, bg = c.ui_bg }
+        groups.SnacksInputBorder = { fg = c.gray2 }
+        groups.SnacksInputTitle = { fg = c.white, bold = true }
+    end
+    
     -- Lualine (theme should be set separately in lualine config)
     
     return groups

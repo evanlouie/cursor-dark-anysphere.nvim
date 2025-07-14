@@ -53,6 +53,7 @@ M.default_config = {
         lazy = true,
         mini = true,
         oil = true,
+        snacks = true,
     },
 }
 
