@@ -27,3 +27,9 @@ temp/
 
 # Documentation build
 doc/tags
+
+# VSCode theme source file (not needed in the repo)
+cursor-dark-anysphere.vscode.json
+
+# Test files
+test_sidebar.vim

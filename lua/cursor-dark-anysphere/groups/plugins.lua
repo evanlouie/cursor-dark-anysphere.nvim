@@ -38,7 +38,7 @@ function M.setup(c, config)
         groups.NvimTreeIndentMarker = { fg = c.tree_indent_guides }
         groups.NvimTreeImageFile = { fg = c.purple2 }
         groups.NvimTreeSymlink = { fg = c.blue2 }
-        groups.NvimTreeFolderName = { fg = c.editor_fg }
+        groups.NvimTreeFolderName = { fg = c.sidebar_fg }
         groups.NvimTreeFolderIcon = { fg = c.blue2 }
         groups.NvimTreeOpenedFolderName = { fg = c.blue2, bold = true }
         groups.NvimTreeEmptyFolderName = { fg = c.gray7 }
@@ -51,11 +51,11 @@ function M.setup(c, config)
     if config.plugins.neo_tree then
         groups.NeoTreeNormal = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
         groups.NeoTreeNormalNC = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
-        groups.NeoTreeDirectoryName = { fg = c.editor_fg }
+        groups.NeoTreeDirectoryName = { fg = c.sidebar_fg }
         groups.NeoTreeDirectoryIcon = { fg = c.blue2 }
         groups.NeoTreeRootName = { fg = c.blue2, bold = true }
-        groups.NeoTreeFileName = { fg = c.editor_fg }
-        groups.NeoTreeFileIcon = { fg = c.editor_fg }
+        groups.NeoTreeFileName = { fg = c.sidebar_fg }
+        groups.NeoTreeFileIcon = { fg = c.sidebar_fg }
         groups.NeoTreeFileNameOpened = { fg = c.blue2 }
         groups.NeoTreeSymbolicLinkTarget = { fg = c.blue2 }
         groups.NeoTreeIndentMarker = { fg = c.tree_indent_guides }
@@ -266,6 +266,27 @@ function M.setup(c, config)
         groups.MiniPickPreviewLine = { bg = c.gray1 }
         groups.MiniPickPreviewRegion = { bg = c.gray2 }
         groups.MiniPickPrompt = { fg = c.blue2 }
+    end
+    
+    -- oil.nvim
+    if config.plugins.oil then
+        groups.OilDir = { fg = c.blue2 }
+        groups.OilFile = { fg = c.sidebar_fg }
+        groups.OilCreate = { fg = c.green1 }
+        groups.OilDelete = { fg = c.red1 }
+        groups.OilMove = { fg = c.yellow1 }
+        groups.OilCopy = { fg = c.cyan }
+        groups.OilChange = { fg = c.yellow1 }
+    end
+    
+    -- mini.files
+    if config.plugins.mini then
+        groups.MiniFilesNormal = { fg = c.sidebar_fg }
+        groups.MiniFilesTitle = { fg = c.white, bold = true }
+        groups.MiniFilesTitleFocused = { fg = c.blue2, bold = true }
+        groups.MiniFilesDirectory = { fg = c.blue2 }
+        groups.MiniFilesFile = { fg = c.sidebar_fg }
+        groups.MiniFilesCursorLine = { bg = c.list_active_selection_bg }
     end
     
     -- Lualine (theme should be set separately in lualine config)
