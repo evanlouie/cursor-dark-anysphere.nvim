@@ -42,7 +42,23 @@ function M.setup(c, config)
         groups.NvimTreeFolderIcon = { fg = c.blue2 }
         groups.NvimTreeOpenedFolderName = { fg = c.blue2, bold = true }
         groups.NvimTreeEmptyFolderName = { fg = c.gray7 }
+        groups.NvimTreeFileName = { fg = c.sidebar_fg }
+        groups.NvimTreeFileIcon = { fg = c.sidebar_fg }
+        groups.NvimTreeFileNameOpened = { fg = c.blue2 }
         groups.NvimTreeExecFile = { fg = c.green1 }
+        groups.NvimTreeMarkdownFile = { fg = c.sidebar_fg }
+        groups.NvimTreeLicenseFile = { fg = c.yellow2 }
+        groups.NvimTreeYamlFile = { fg = c.sidebar_fg }
+        groups.NvimTreeTomlFile = { fg = c.sidebar_fg }
+        groups.NvimTreeJsonFile = { fg = c.sidebar_fg }
+        groups.NvimTreeLuaFile = { fg = c.sidebar_fg }
+        groups.NvimTreePythonFile = { fg = c.sidebar_fg }
+        groups.NvimTreeShellFile = { fg = c.sidebar_fg }
+        groups.NvimTreeJavascriptFile = { fg = c.sidebar_fg }
+        groups.NvimTreeCFile = { fg = c.sidebar_fg }
+        groups.NvimTreeReactFile = { fg = c.sidebar_fg }
+        groups.NvimTreeHtmlFile = { fg = c.sidebar_fg }
+        groups.NvimTreeCssFile = { fg = c.sidebar_fg }
         groups.NvimTreeWinSeparator = { fg = c.sidebar_border, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
         groups.NvimTreeWindowPicker = { fg = c.white, bg = c.blue1, bold = true }
     end
