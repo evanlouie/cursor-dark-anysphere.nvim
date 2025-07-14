@@ -125,18 +125,6 @@ function M.setup(c, config)
         -- Directory
         Directory = { fg = c.blue2 },
         
-        -- Netrw (built-in file explorer)
-        netrwDir = { fg = c.blue2 },
-        netrwClassify = { fg = c.blue2 },
-        netrwLink = { fg = c.cyan },
-        netrwSymLink = { fg = c.cyan },
-        netrwExe = { fg = c.green1 },
-        netrwComment = { fg = c.gray4 },
-        netrwList = { fg = c.sidebar_fg },
-        netrwHelpCmd = { fg = c.cyan },
-        netrwCmdSep = { fg = c.gray3 },
-        netrwVersion = { fg = c.green1 },
-        
         -- Title
         Title = { fg = c.blue2, bold = true },
         

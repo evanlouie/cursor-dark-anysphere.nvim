@@ -52,7 +52,6 @@ M.default_config = {
         todo_comments = true,
         lazy = true,
         mini = true,
-        oil = true,
         snacks = true,
     },
 }

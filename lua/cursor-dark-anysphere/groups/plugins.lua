@@ -47,35 +47,7 @@ function M.setup(c, config)
         groups.NvimTreeEmptyFolderName = { fg = c.gray7 }
         groups.NvimTreeFileName = { fg = c.sidebar_fg }
         groups.NvimTreeFileIcon = { fg = c.sidebar_fg }
-        groups.NvimTreeFileNameOpened = { fg = c.blue2 }
         groups.NvimTreeExecFile = { fg = c.green1 }
-        groups.NvimTreeMarkdownFile = { fg = c.sidebar_fg }
-        groups.NvimTreeLicenseFile = { fg = c.yellow2 }
-        groups.NvimTreeYamlFile = { fg = c.sidebar_fg }
-        groups.NvimTreeTomlFile = { fg = c.sidebar_fg }
-        groups.NvimTreeJsonFile = { fg = c.sidebar_fg }
-        groups.NvimTreeLuaFile = { fg = c.sidebar_fg }
-        groups.NvimTreePythonFile = { fg = c.sidebar_fg }
-        groups.NvimTreeShellFile = { fg = c.sidebar_fg }
-        groups.NvimTreeJavascriptFile = { fg = c.sidebar_fg }
-        groups.NvimTreeCFile = { fg = c.sidebar_fg }
-        groups.NvimTreeReactFile = { fg = c.sidebar_fg }
-        groups.NvimTreeHtmlFile = { fg = c.sidebar_fg }
-        groups.NvimTreeCssFile = { fg = c.sidebar_fg }
-        
-        -- Additional nvim-tree highlight groups that might be used
-        groups.NvimTreeText = { fg = c.sidebar_fg }
-        groups.NvimTreeFile = { fg = c.sidebar_fg }
-        groups.NvimTreeFileRenamed = { fg = c.yellow1 }
-        groups.NvimTreeFileStaged = { fg = c.green1 }
-        groups.NvimTreeFileDirty = { fg = c.yellow1 }
-        groups.NvimTreeFileIgnored = { fg = c.gray4 }
-        groups.NvimTreeFileMerge = { fg = c.orange }
-        groups.NvimTreeFileNew = { fg = c.green1 }
-        groups.NvimTreeEndOfBuffer = { fg = c.ui_bg }
-        groups.NvimTreeCursor = { bg = c.list_active_selection_bg }
-        groups.NvimTreeStatusLine = { fg = c.statusbar_fg, bg = c.ui_bg }
-        groups.NvimTreeStatusLineNC = { fg = c.gray4, bg = c.ui_bg }
         
         groups.NvimTreeWinSeparator = { fg = c.sidebar_border, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
         groups.NvimTreeWindowPicker = { fg = c.white, bg = c.blue1, bold = true }
@@ -302,26 +274,6 @@ function M.setup(c, config)
         groups.MiniPickPrompt = { fg = c.blue2 }
     end
     
-    -- oil.nvim
-    if config.plugins.oil then
-        groups.OilDir = { fg = c.blue2 }
-        groups.OilFile = { fg = c.sidebar_fg }
-        groups.OilCreate = { fg = c.green1 }
-        groups.OilDelete = { fg = c.red1 }
-        groups.OilMove = { fg = c.yellow1 }
-        groups.OilCopy = { fg = c.cyan }
-        groups.OilChange = { fg = c.yellow1 }
-    end
-    
-    -- mini.files
-    if config.plugins.mini then
-        groups.MiniFilesNormal = { fg = c.sidebar_fg }
-        groups.MiniFilesTitle = { fg = c.white, bold = true }
-        groups.MiniFilesTitleFocused = { fg = c.blue2, bold = true }
-        groups.MiniFilesDirectory = { fg = c.blue2 }
-        groups.MiniFilesFile = { fg = c.sidebar_fg }
-        groups.MiniFilesCursorLine = { bg = c.list_active_selection_bg }
-    end
     
     -- snacks.nvim
     if config.plugins.snacks then
