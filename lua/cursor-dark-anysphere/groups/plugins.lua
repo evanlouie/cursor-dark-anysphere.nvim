@@ -141,7 +141,7 @@ function M.setup(c, config)
         groups.NvimTreeGitDeleted = { fg = c.red1 }
         groups.NvimTreeGitStaged = { fg = c.green1 }
         groups.NvimTreeSpecialFile = { fg = c.yellow2, underline = true }
-        groups.NvimTreeIndentMarker = { fg = c.tree_indent_guides }
+        groups.NvimTreeIndentMarker = { fg = c.gray3 }
         groups.NvimTreeImageFile = { fg = c.purple2 }
         groups.NvimTreeSymlink = { fg = c.blue2 }
         groups.NvimTreeFolderName = { fg = c.sidebar_fg }
@@ -167,7 +167,7 @@ function M.setup(c, config)
         groups.NeoTreeFileIcon = { fg = c.sidebar_fg }
         groups.NeoTreeFileNameOpened = { fg = c.blue2 }
         groups.NeoTreeSymbolicLinkTarget = { fg = c.blue2 }
-        groups.NeoTreeIndentMarker = { fg = c.tree_indent_guides }
+        groups.NeoTreeIndentMarker = { fg = c.gray3 }
         groups.NeoTreeGitAdded = { fg = c.green1 }
         groups.NeoTreeGitConflict = { fg = c.red1 }
         groups.NeoTreeGitDeleted = { fg = c.red1 }
@@ -271,7 +271,7 @@ function M.setup(c, config)
         groups.TroubleLocation = { fg = c.gray7 }
         groups.TroubleFile = { fg = c.blue2 }
         groups.TroubleFoldIcon = { fg = c.gray7 }
-        groups.TroubleIndent = { fg = c.tree_indent_guides }
+        groups.TroubleIndent = { fg = c.gray3 }
         groups.TroubleCode = { fg = c.gray7 }
     end
     
@@ -329,7 +329,7 @@ function M.setup(c, config)
     -- Mini.nvim
     if config.plugins.mini then
         -- mini.indentscope
-        groups.MiniIndentscopeSymbol = { fg = c.gray3 }
+        groups.MiniIndentscopeSymbol = { fg = c.gray4 }
         groups.MiniIndentscopePrefix = { nocombine = true }
         
         -- mini.starter

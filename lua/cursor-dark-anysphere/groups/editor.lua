@@ -111,8 +111,8 @@ function M.setup(c, config)
         -- Special characters
         NonText = { fg = config.ending_tildes and c.gray3 or c.editor_bg },
         EndOfBuffer = { fg = config.ending_tildes and c.gray3 or c.editor_bg },
-        Whitespace = { fg = c.editorWhitespace_fg },
-        SpecialKey = { fg = c.editorWhitespace_fg },
+        Whitespace = { fg = c.gray2 },
+        SpecialKey = { fg = c.gray2 },
         
         -- Quick fix
         QuickFixLine = { bg = c.gray1 },
@@ -132,10 +132,10 @@ function M.setup(c, config)
         ColorColumn = { bg = c.gray1 },
         
         -- Indent guides
-        IndentBlanklineChar = { fg = c.editorIndentGuide_bg, nocombine = true },
+        IndentBlanklineChar = { fg = c.gray2, nocombine = true },
         IndentBlanklineContextChar = { fg = c.gray3, nocombine = true },
-        IblIndent = { fg = c.editorIndentGuide_bg, nocombine = true },
-        IblWhitespace = { fg = c.editorIndentGuide_bg, nocombine = true },
+        IblIndent = { fg = c.gray2, nocombine = true },
+        IblWhitespace = { fg = c.gray2, nocombine = true },
         IblScope = { fg = c.gray3, nocombine = true },
         
         -- Winbar
