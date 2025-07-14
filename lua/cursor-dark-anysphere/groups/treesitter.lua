@@ -1,12 +1,36 @@
 local M = {}
+local utils = require('cursor-dark-anysphere.utils')
 
 function M.setup(c, config)
+    -- Helper function for safe style merging
+    local function safe_style_merge(base, style_config)
+        local success, result = pcall(function()
+            return utils.safe_tbl_extend("force", base, style_config or {})
+        end)
+        
+        if success and result then
+            return result
+        else
+            -- Fallback: manual merge
+            local merged = {}
+            for k, v in pairs(base) do
+                merged[k] = v
+            end
+            if style_config then
+                for k, v in pairs(style_config) do
+                    merged[k] = v
+                end
+            end
+            return merged
+        end
+    end
+
     local groups = {
         -- Identifiers
         ["@variable"] = { fg = c.editor_fg },
         ["@variable.builtin"] = { fg = c.red5 },
-        ["@variable.parameter"] = vim.tbl_extend("force", { fg = c.editor_fg }, config.styles.parameters or {}),
-        ["@variable.parameter.builtin"] = vim.tbl_extend("force", { fg = c.editor_fg }, config.styles.parameters or {}),
+        ["@variable.parameter"] = safe_style_merge({ fg = c.editor_fg }, config.styles.parameters),
+        ["@variable.parameter.builtin"] = safe_style_merge({ fg = c.editor_fg }, config.styles.parameters or {}),
         ["@variable.member"] = { fg = c.purple3 },
         
         -- Constants
@@ -15,7 +39,7 @@ function M.setup(c, config)
         ["@constant.macro"] = { fg = c.green2 },
         
         -- Literals
-        ["@string"] = vim.tbl_extend("force", { fg = c.pink }, config.styles.strings or {}),
+        ["@string"] = safe_style_merge({ fg = c.pink }, config.styles.strings or {}),
         ["@string.documentation"] = { fg = c.pink },
         ["@string.regex"] = { fg = c.editor_fg },
         ["@string.escape"] = { fg = c.editor_fg },
@@ -27,27 +51,31 @@ function M.setup(c, config)
         ["@character"] = { fg = c.pink },
         ["@character.special"] = { fg = c.editor_fg },
         
-        ["@boolean"] = vim.tbl_extend("force", { fg = c.blue4 }, config.styles.booleans or {}),
-        ["@number"] = vim.tbl_extend("force", { fg = c.yellow3 }, config.styles.numbers or {}),
+        ["@boolean"] = safe_style_merge({ fg = c.blue4 }, config.styles.booleans or {}),
+        ["@number"] = safe_style_merge({ fg = c.yellow3 }, config.styles.numbers or {}),
         ["@number.float"] = { fg = c.yellow3 },
         
-        -- Functions
-        ["@function"] = vim.tbl_extend("force", { fg = c.yellow3 }, config.styles.functions or {}),
+        -- Functions with enhanced styling
+        ["@function"] = safe_style_merge({ fg = c.yellow3 }, config.styles.functions or {}),
         ["@function.builtin"] = { fg = c.blue4 },
         ["@function.call"] = { fg = c.yellow3 },
         ["@function.macro"] = { fg = c.green2 },
-        ["@function.method"] = vim.tbl_extend("force", { fg = c.yellow3 }, config.styles.functions or {}),
+        ["@function.method"] = safe_style_merge({ fg = c.yellow3 }, config.styles.functions or {}),
         ["@function.method.call"] = { fg = c.yellow3 },
         
+        -- Function and method declarations
+        ["@function.declaration"] = safe_style_merge({ fg = c.yellow2 }, config.styles.function_declarations or {}),
+        ["@method.declaration"] = safe_style_merge({ fg = c.yellow2 }, config.styles.method_declarations or {}),
+        
         ["@constructor"] = { fg = c.yellow2 },
-        ["@operator"] = vim.tbl_extend("force", { fg = c.editor_fg }, config.styles.operators or {}),
+        ["@operator"] = safe_style_merge({ fg = c.editor_fg }, config.styles.operators or {}),
         
         -- Keywords
-        ["@keyword"] = vim.tbl_extend("force", { fg = c.blue4 }, config.styles.keywords or {}),
+        ["@keyword"] = safe_style_merge({ fg = c.blue4 }, config.styles.keywords or {}),
         ["@keyword.coroutine"] = { fg = c.blue4 },
         ["@keyword.function"] = { fg = c.blue4 },
         ["@keyword.operator"] = { fg = c.blue4 },
-        ["@keyword.import"] = vim.tbl_extend("force", { fg = c.blue4 }, config.styles.keywords or {}),
+        ["@keyword.import"] = safe_style_merge({ fg = c.blue4 }, config.styles.keywords or {}),
         ["@keyword.type"] = { fg = c.blue4 },
         ["@keyword.modifier"] = { fg = c.blue4 },
         ["@keyword.repeat"] = { fg = c.blue4 },
@@ -65,8 +93,8 @@ function M.setup(c, config)
         ["@punctuation.special"] = { fg = c.blue4 },
         
         -- Comments
-        ["@comment"] = vim.tbl_extend("force", { fg = c.comment }, config.styles.comments or {}),
-        ["@comment.documentation"] = vim.tbl_extend("force", { fg = c.comment }, config.styles.comments or {}),
+        ["@comment"] = safe_style_merge({ fg = c.comment }, config.styles.comments or {}),
+        ["@comment.documentation"] = safe_style_merge({ fg = c.comment }, config.styles.comments or {}),
         ["@comment.error"] = { fg = c.red1 },
         ["@comment.warning"] = { fg = c.yellow1 },
         ["@comment.todo"] = { fg = c.yellow1, bold = true },
@@ -107,7 +135,7 @@ function M.setup(c, config)
         ["@tag.delimiter"] = { fg = c.gray6 },
         
         -- Types
-        ["@type"] = vim.tbl_extend("force", { fg = c.blue3 }, config.styles.types or {}),
+        ["@type"] = safe_style_merge({ fg = c.blue3 }, config.styles.types or {}),
         ["@type.builtin"] = { fg = c.blue4 },
         ["@type.definition"] = { fg = c.blue3 },
         ["@type.qualifier"] = { fg = c.blue4 },
@@ -132,8 +160,8 @@ function M.setup(c, config)
         -- Python
         ["@type.python"] = { fg = c.yellow3 },
         ["@constructor.python"] = { fg = c.yellow3 },
-        ["@function.decorator.python"] = vim.tbl_extend("force", { fg = c.green2 }, config.styles.functions or {}),
-        ["@variable.parameter.python"] = vim.tbl_extend("force", { fg = c.yellow4 }, config.styles.parameters or {}),
+        ["@function.decorator.python"] = safe_style_merge({ fg = c.green2 }, config.styles.functions or {}),
+        ["@variable.parameter.python"] = safe_style_merge({ fg = c.yellow4 }, config.styles.parameters or {}),
         ["@variable.builtin.python"] = { fg = c.yellow2 },
         
         -- JavaScript/TypeScript
@@ -146,8 +174,8 @@ function M.setup(c, config)
         -- C/C++
         ["@type.c"] = { fg = c.blue3 },
         ["@type.cpp"] = { fg = c.blue3 },
-        ["@function.c"] = { fg = "#efefef", bold = true },
-        ["@function.cpp"] = { fg = "#efefef", bold = true },
+        ["@function.c"] = safe_style_merge({ fg = "#efefef" }, config.styles.c_functions or {}),
+        ["@function.cpp"] = safe_style_merge({ fg = "#efefef" }, config.styles.cpp_functions or {}),
         ["@method.cpp"] = { fg = c.blue3 },
         ["@variable.builtin.cpp"] = { fg = c.blue4 },
         ["@namespace.cpp"] = { fg = c.blue3 },
@@ -185,6 +213,42 @@ function M.setup(c, config)
         ["@operator.regex"] = { fg = c.yellow4 },
         ["@punctuation.bracket.regex"] = { fg = c.editor_fg },
         ["@constant.character.escape.regex"] = { fg = c.editor_fg },
+        
+        -- Enhanced treesitter patterns for VS Code font styling
+        -- JavaScript/TypeScript enhanced patterns
+        ["@property.javascript"] = safe_style_merge({ fg = c.purple3 }, config.styles.js_attributes or {}),
+        ["@property.typescript"] = safe_style_merge({ fg = c.purple3 }, config.styles.js_attributes or {}),
+        ["@variable.parameter.javascript"] = safe_style_merge({ fg = c.yellow4 }, config.styles.js_attributes or {}),
+        ["@variable.parameter.typescript"] = safe_style_merge({ fg = c.yellow4 }, config.styles.js_attributes or {}),
+        
+        -- Python enhanced keyword patterns
+        ["@keyword.control.python"] = safe_style_merge({ fg = c.blue4 }, config.styles.python_keywords or {}),
+        ["@keyword.import.python"] = safe_style_merge({ fg = c.blue4 }, config.styles.python_keywords or {}),
+        ["@keyword.conditional.python"] = safe_style_merge({ fg = c.blue4 }, config.styles.python_keywords or {}),
+        ["@keyword.repeat.python"] = safe_style_merge({ fg = c.blue4 }, config.styles.python_keywords or {}),
+        ["@keyword.exception.python"] = safe_style_merge({ fg = c.blue4 }, config.styles.python_keywords or {}),
+        
+        -- Enhanced function declaration patterns for various languages
+        ["@function.declaration.python"] = safe_style_merge({ fg = c.yellow3 }, config.styles.function_declarations or {}),
+        ["@function.declaration.javascript"] = safe_style_merge({ fg = c.yellow2 }, config.styles.function_declarations or {}),
+        ["@function.declaration.typescript"] = safe_style_merge({ fg = c.yellow2 }, config.styles.function_declarations or {}),
+        ["@function.declaration.rust"] = safe_style_merge({ fg = c.yellow3 }, config.styles.function_declarations or {}),
+        ["@function.declaration.go"] = safe_style_merge({ fg = c.yellow3 }, config.styles.function_declarations or {}),
+        ["@function.declaration.lua"] = safe_style_merge({ fg = c.yellow3 }, config.styles.function_declarations or {}),
+        
+        -- Method declaration patterns
+        ["@method.declaration.python"] = safe_style_merge({ fg = c.yellow3 }, config.styles.method_declarations or {}),
+        ["@method.declaration.javascript"] = safe_style_merge({ fg = c.yellow2 }, config.styles.method_declarations or {}),
+        ["@method.declaration.typescript"] = safe_style_merge({ fg = c.yellow2 }, config.styles.method_declarations or {}),
+        ["@method.declaration.cpp"] = safe_style_merge({ fg = c.blue3 }, config.styles.method_declarations or {}),
+        ["@method.declaration.c"] = safe_style_merge({ fg = "#efefef" }, config.styles.method_declarations or {}),
+        
+        -- TypeScript property declarations
+        ["@property.declaration.typescript"] = safe_style_merge({ fg = c.purple3 }, config.styles.typescript_properties or {}),
+        
+        -- Enhanced C/C++ function patterns
+        ["@function.declaration.c"] = safe_style_merge({ fg = "#efefef" }, config.styles.c_functions or {}),
+        ["@function.declaration.cpp"] = safe_style_merge({ fg = "#efefef" }, config.styles.cpp_functions or {}),
     }
     
     -- Legacy treesitter highlights (for compatibility)

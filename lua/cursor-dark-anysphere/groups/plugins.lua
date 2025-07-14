@@ -1,35 +1,138 @@
 local M = {}
 
+-- Plugin loading cache and lazy loading state
+local plugin_cache = {}
+local loaded_plugins = {}
+local loading_stats = {
+    cache_hits = 0,
+    cache_misses = 0,
+    lazy_loads = 0
+}
+
+-- Get loading statistics
+function M.get_loading_stats()
+    return {
+        cache_hit_rate = loading_stats.cache_hits > 0 and (loading_stats.cache_hits / (loading_stats.cache_hits + loading_stats.cache_misses)) or 0,
+        total_lazy_loads = loading_stats.lazy_loads,
+        loaded_plugins_count = (function() local count = 0; for _ in pairs(loaded_plugins) do count = count + 1 end; return count end)(),
+        stats = loading_stats
+    }
+end
+
+-- Clear plugin cache
+function M.clear_cache()
+    plugin_cache = {}
+    loaded_plugins = {}
+end
+
+-- Generate cache key for plugin highlight groups
+local function get_plugin_cache_key(plugin_name, colors_hash, config_hash)
+    return plugin_name .. "|" .. (colors_hash or "default") .. "|" .. (config_hash or "default")
+end
+
+-- Generate hash for colors and config to detect changes
+local function generate_hash(obj)
+    if type(obj) ~= "table" then
+        return tostring(obj)
+    end
+    
+    local parts = {}
+    for k, v in pairs(obj) do
+        table.insert(parts, tostring(k) .. ":" .. tostring(v))
+    end
+    table.sort(parts)
+    return table.concat(parts, "|")
+end
+
+-- Lazy load plugin highlight groups only when needed
+local function lazy_load_plugin(plugin_name, colors, config, generator_func)
+    -- Generate cache key
+    local colors_hash = generate_hash({
+        ui_bg = colors.ui_bg,
+        editor_fg = colors.editor_fg,
+        transparency_mode = config.transparency_mode
+    })
+    local config_hash = generate_hash({
+        enabled = config.plugins[plugin_name],
+        transparencies = config.transparencies
+    })
+    
+    local cache_key = get_plugin_cache_key(plugin_name, colors_hash, config_hash)
+    
+    -- Check cache first
+    if plugin_cache[cache_key] then
+        loading_stats.cache_hits = loading_stats.cache_hits + 1
+        return plugin_cache[cache_key]
+    end
+    
+    loading_stats.cache_misses = loading_stats.cache_misses + 1
+    loading_stats.lazy_loads = loading_stats.lazy_loads + 1
+    
+    -- Generate highlight groups
+    local groups = generator_func()
+    
+    -- Cache the result
+    plugin_cache[cache_key] = groups
+    loaded_plugins[plugin_name] = true
+    
+    return groups
+end
+
 function M.setup(c, config)
     local utils = require('cursor-dark-anysphere.utils')
     local groups = {}
     
-    -- Telescope
+    -- Helper function to apply transparency-aware background
+    local function get_transparent_bg(base_bg, transparency_type)
+        if not config.transparencies then
+            return base_bg
+        end
+        
+        if transparency_type == "float" and config.transparencies.floats then
+            return base_bg == c.ui_bg and "NONE" or base_bg
+        elseif transparency_type == "popup" and config.transparencies.popups then
+            return base_bg == c.ui_bg and "NONE" or base_bg
+        elseif transparency_type == "sidebar" and config.transparencies.sidebar then
+            return base_bg == c.ui_bg and "NONE" or base_bg
+        end
+        
+        return base_bg
+    end
+    
+    -- Telescope (lazy loaded)
     if config.plugins.telescope then
-        groups.TelescopeNormal = { fg = c.editor_fg, bg = config.transparencies.floats and c.ui_bg or c.ui_bg }
-        groups.TelescopeBorder = { fg = c.gray2, bg = config.transparencies.floats and c.ui_bg or c.ui_bg }
-        groups.TelescopePromptNormal = { fg = c.editor_fg, bg = c.gray1 }
-        groups.TelescopePromptBorder = { fg = c.gray1, bg = c.gray1 }
-        groups.TelescopePromptTitle = { fg = c.white, bg = c.gray1, bold = true }
-        groups.TelescopePromptPrefix = { fg = c.blue2, bg = c.gray1 }
-        groups.TelescopePromptCounter = { fg = c.gray7, bg = c.gray1 }
-        groups.TelescopeResultsNormal = { fg = c.editor_fg, bg = config.transparencies.floats and c.ui_bg or c.ui_bg }
-        groups.TelescopeResultsBorder = { fg = c.gray2, bg = config.transparencies.floats and c.ui_bg or c.ui_bg }
-        groups.TelescopeResultsTitle = { fg = c.white, bg = config.transparencies.floats and c.ui_bg or c.ui_bg, bold = true }
-        groups.TelescopePreviewNormal = { fg = c.editor_fg, bg = config.transparencies.floats and c.ui_bg or c.ui_bg }
-        groups.TelescopePreviewBorder = { fg = c.gray2, bg = config.transparencies.floats and c.ui_bg or c.ui_bg }
-        groups.TelescopePreviewTitle = { fg = c.white, bg = config.transparencies.floats and c.ui_bg or c.ui_bg, bold = true }
-        groups.TelescopeSelection = { bg = c.list_active_selection_bg }
-        groups.TelescopeSelectionCaret = { fg = c.blue2, bg = c.list_active_selection_bg }
-        groups.TelescopeMultiSelection = { bg = c.list_inactive_selection_bg }
-        groups.TelescopeMatching = { fg = c.blue2, bold = true }
+        local telescope_groups = lazy_load_plugin("telescope", c, config, function()
+            return {
+                TelescopeNormal = { fg = c.editor_fg, bg = get_transparent_bg(c.ui_bg, "float") },
+                TelescopeBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "float") },
+                TelescopePromptNormal = { fg = c.editor_fg, bg = c.gray1 },
+                TelescopePromptBorder = { fg = c.gray1, bg = c.gray1 },
+                TelescopePromptTitle = { fg = c.white, bg = c.gray1, bold = true },
+                TelescopePromptPrefix = { fg = c.blue2, bg = c.gray1 },
+                TelescopePromptCounter = { fg = c.gray7, bg = c.gray1 },
+                TelescopeResultsNormal = { fg = c.editor_fg, bg = get_transparent_bg(c.ui_bg, "float") },
+                TelescopeResultsBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "float") },
+                TelescopeResultsTitle = { fg = c.white, bg = get_transparent_bg(c.ui_bg, "float"), bold = true },
+                TelescopePreviewNormal = { fg = c.editor_fg, bg = get_transparent_bg(c.ui_bg, "float") },
+                TelescopePreviewBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "float") },
+                TelescopePreviewTitle = { fg = c.white, bg = get_transparent_bg(c.ui_bg, "float"), bold = true },
+                TelescopeSelection = { bg = c.list_active_selection_bg },
+                TelescopeSelectionCaret = { fg = c.blue2, bg = c.list_active_selection_bg },
+                TelescopeMultiSelection = { bg = c.list_inactive_selection_bg },
+                TelescopeMatching = { fg = c.blue2, bold = true }
+            }
+        end)
+        
+        for name, hl in pairs(telescope_groups) do
+            groups[name] = hl
+        end
     end
     
     -- nvim-tree
     if config.plugins.nvim_tree then
-        groups.NvimTreeNormal = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
-        groups.NvimTreeNormalNC = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
-        groups.NvimTreeNormalFloat = { fg = c.sidebar_fg, bg = c.ui_bg }
+        groups.NvimTreeNormal = { fg = c.sidebar_fg, bg = get_transparent_bg(c.ui_bg, "sidebar") }
+        groups.NvimTreeNormalNC = { fg = c.sidebar_fg, bg = get_transparent_bg(c.ui_bg, "sidebar") }
+        groups.NvimTreeNormalFloat = { fg = c.sidebar_fg, bg = get_transparent_bg(c.ui_bg, "float") }
         groups.NvimTreeCursorLine = { bg = c.list_active_selection_bg }
         groups.NvimTreeCursorColumn = { bg = c.list_active_selection_bg }
         groups.NvimTreeRootFolder = { fg = c.blue2, bold = true }
@@ -286,7 +389,7 @@ function M.setup(c, config)
         groups.SnacksPickerGitStatusModified = { fg = c.yellow1 }
         groups.SnacksPickerGitStatusDeleted = { fg = c.red1 }
         groups.SnacksPickerGitStatusStaged = { fg = c.green1 }
-        groups.SnacksPickerGitStatusRenamed = { fg = c.cyan }
+        groups.SnacksPickerGitStatusRenamed = { fg = c.blue2 }
         groups.SnacksPickerGitStatusAdded = { fg = c.green1 }
         
         -- Explorer specific highlights
@@ -321,7 +424,146 @@ function M.setup(c, config)
         groups.SnacksInputTitle = { fg = c.white, bold = true }
     end
     
+    -- DAP (Debug Adapter Protocol) - nvim-dap
+    if config.plugins.dap then
+        groups.DapBreakpoint = { fg = c.red1 }
+        groups.DapBreakpointCondition = { fg = c.yellow1 }
+        groups.DapLogPoint = { fg = c.blue2 }
+        groups.DapStopped = { fg = c.green1 }
+        groups.DapStoppedLine = { bg = c.diff_added_bg }
+        groups.DapUIVariable = { fg = c.blue5 }
+        groups.DapUIValue = { fg = c.yellow3 }
+        groups.DapUIType = { fg = c.purple3 }
+        groups.DapUIModifiedValue = { fg = c.yellow1, bold = true }
+        groups.DapUIDecoration = { fg = c.gray5 }
+        groups.DapUIThread = { fg = c.green1 }
+        groups.DapUIStoppedThread = { fg = c.yellow1 }
+        groups.DapUISource = { fg = c.purple2 }
+        groups.DapUILineNumber = { fg = c.gray5 }
+        groups.DapUIFloatBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "float") }
+        groups.DapUIWatchesEmpty = { fg = c.gray5 }
+        groups.DapUIWatchesValue = { fg = c.green1 }
+        groups.DapUIWatchesError = { fg = c.red1 }
+        groups.DapUIBreakpointsPath = { fg = c.blue2 }
+        groups.DapUIBreakpointsInfo = { fg = c.green1 }
+        groups.DapUIBreakpointsCurrentLine = { fg = c.yellow1, bold = true }
+        groups.DapUIBreakpointsLine = { fg = c.gray7 }
+        groups.DapUIBreakpointsDisabledLine = { fg = c.gray5 }
+        groups.DapUICurrentFrameName = { fg = c.yellow1, bold = true }
+        groups.DapUIStepOver = { fg = c.blue2 }
+        groups.DapUIStepInto = { fg = c.blue2 }
+        groups.DapUIStepBack = { fg = c.blue2 }
+        groups.DapUIStepOut = { fg = c.blue2 }
+        groups.DapUIStop = { fg = c.red1 }
+        groups.DapUIRestart = { fg = c.green1 }
+        groups.DapUIPlayPause = { fg = c.green1 }
+        groups.DapUIUnavailable = { fg = c.gray5 }
+        groups.DapUIWinSelect = { fg = c.blue2, bold = true }
+    end
+    
+    -- Copilot.lua
+    if config.plugins.copilot then
+        groups.CopilotSuggestion = { fg = c.gray5, italic = true }
+        groups.CopilotAnnotation = { fg = c.gray4 }
+        groups.CopilotLabel = { fg = c.blue2, bold = true }
+    end
+    
+    -- Oil.nvim
+    if config.plugins.oil then
+        groups.OilDir = { fg = c.blue2, bold = true }
+        groups.OilFile = { fg = c.sidebar_fg }
+        groups.OilLink = { fg = c.blue2, underline = true }
+        groups.OilSocket = { fg = c.purple2 }
+        groups.OilCopy = { fg = c.yellow1, bold = true }
+        groups.OilMove = { fg = c.blue2, bold = true }
+        groups.OilCreate = { fg = c.green1, bold = true }
+        groups.OilDelete = { fg = c.red1, bold = true }
+        groups.OilPermissionRead = { fg = c.green1 }
+        groups.OilPermissionWrite = { fg = c.yellow1 }
+        groups.OilPermissionExecute = { fg = c.red1 }
+        groups.OilTypeDir = { fg = c.blue2 }
+        groups.OilTypeFile = { fg = c.sidebar_fg }
+        groups.OilTypeLink = { fg = c.blue2 }
+        groups.OilTypeSpecial = { fg = c.purple2 }
+        groups.OilSize = { fg = c.gray5 }
+        groups.OilMtime = { fg = c.gray5 }
+        groups.OilRestore = { fg = c.green1 }
+        groups.OilTrash = { fg = c.red1 }
+        groups.OilTrashSourcePath = { fg = c.gray5 }
+    end
+    
+    -- Conform.nvim
+    if config.plugins.conform then
+        groups.ConformProgress = { fg = c.yellow1 }
+        groups.ConformDone = { fg = c.green1 }
+        groups.ConformError = { fg = c.red1 }
+        groups.ConformTimeout = { fg = c.yellow2 }
+    end
+    
+    -- Noice.nvim
+    if config.plugins.noice then
+        groups.NoiceCmdline = { fg = c.editor_fg, bg = get_transparent_bg(c.ui_bg, "popup") }
+        groups.NoiceCmdlineIcon = { fg = c.blue2 }
+        groups.NoiceCmdlinePrompt = { fg = c.yellow2 }
+        groups.NoicePopupmenu = { fg = c.editor_fg, bg = get_transparent_bg(c.ui_bg, "popup") }
+        groups.NoicePopupmenuSelected = { bg = c.list_active_selection_bg }
+        groups.NoicePopupmenuBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "popup") }
+        groups.NoiceConfirm = { fg = c.white, bg = c.gray2, bold = true }
+        groups.NoiceConfirmBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "popup") }
+        groups.NoiceFormatProgressTodo = { fg = c.gray5 }
+        groups.NoiceFormatProgressDone = { fg = c.green1 }
+        groups.NoiceLspProgressTitle = { fg = c.blue2, bold = true }
+        groups.NoiceLspProgressClient = { fg = c.gray7 }
+        groups.NoiceLspProgressSpinner = { fg = c.yellow1 }
+        groups.NoiceCompletionItemKindDefault = { fg = c.editor_fg }
+        groups.NoiceCompletionItemKindKeyword = { fg = c.blue4 }
+        groups.NoiceCompletionItemKindVariable = { fg = c.blue5 }
+        groups.NoiceCompletionItemKindConstant = { fg = c.yellow3 }
+        groups.NoiceCompletionItemKindReference = { fg = c.editor_fg }
+        groups.NoiceCompletionItemKindValue = { fg = c.yellow3 }
+        groups.NoiceCompletionItemKindFunction = { fg = c.yellow2 }
+        groups.NoiceCompletionItemKindMethod = { fg = c.yellow2 }
+        groups.NoiceCompletionItemKindConstructor = { fg = c.yellow2 }
+        groups.NoiceCompletionItemKindClass = { fg = c.blue3 }
+        groups.NoiceCompletionItemKindInterface = { fg = c.blue3 }
+        groups.NoiceCompletionItemKindStruct = { fg = c.blue3 }
+        groups.NoiceCompletionItemKindEvent = { fg = c.yellow2 }
+        groups.NoiceCompletionItemKindOperator = { fg = c.editor_fg }
+        groups.NoiceCompletionItemKindTypeParameter = { fg = c.blue3 }
+        groups.NoiceCompletionItemKindProperty = { fg = c.purple3 }
+        groups.NoiceCompletionItemKindUnit = { fg = c.yellow3 }
+        groups.NoiceCompletionItemKindEnum = { fg = c.blue3 }
+        groups.NoiceCompletionItemKindEnumMember = { fg = c.editor_fg }
+        groups.NoiceCompletionItemKindModule = { fg = c.yellow2 }
+        groups.NoiceCompletionItemKindText = { fg = c.editor_fg }
+        groups.NoiceCompletionItemKindSnippet = { fg = c.green1 }
+        groups.NoiceCompletionItemKindColor = { fg = c.pink }
+        groups.NoiceCompletionItemKindFile = { fg = c.editor_fg }
+        groups.NoiceCompletionItemKindFolder = { fg = c.blue2 }
+        groups.NoiceCompletionItemKindField = { fg = c.purple3 }
+        groups.NoiceMini = { bg = get_transparent_bg(c.ui_bg, "float") }
+        groups.NoiceCmdlinePopup = { bg = get_transparent_bg(c.ui_bg, "float") }
+        groups.NoiceCmdlinePopupBorder = { fg = c.gray2, bg = get_transparent_bg(c.ui_bg, "float") }
+        groups.NoiceCmdlinePopupTitle = { fg = c.white, bg = get_transparent_bg(c.ui_bg, "float"), bold = true }
+        groups.NoiceScrollbar = { bg = c.gray1 }
+        groups.NoiceScrollbarThumb = { bg = c.gray3 }
+        groups.NoiceVirtualText = { fg = c.gray5 }
+    end
+    
     -- Lualine (theme should be set separately in lualine config)
+    
+    -- Apply final transparency processing with utility functions
+    if utils.process_plugin_transparency then
+        groups = utils.process_plugin_transparency(groups, c, config)
+    end
+    
+    -- Validate plugin transparency integration
+    if utils.validate_plugin_transparency then
+        local valid, issues = utils.validate_plugin_transparency(groups, config.transparencies or {})
+        if not valid and issues and vim and vim.notify then
+            vim.notify("Plugin transparency validation issues found: " .. table.concat(issues, ", "), vim.log.levels.WARN)
+        end
+    end
     
     return groups
 end

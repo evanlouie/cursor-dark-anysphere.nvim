@@ -187,6 +187,31 @@ function M.setup(c, config)
     -- Inlay hints
     groups.LspInlayHint = { fg = c.gray3, bg = transparent_bg or "NONE" }
     
+    -- Minimap highlight groups (custom groups for minimap functionality)
+    groups.MinimapGutterAdd = { fg = c.minimap_gutter_added_bg }
+    groups.MinimapGutterChange = { fg = c.minimap_gutter_modified_bg }
+    groups.MinimapGutterDelete = { fg = c.minimap_gutter_deleted_bg }
+    groups.MinimapSelectionHighlight = { bg = c.minimap_selection_highlight }
+    groups.MinimapErrorHighlight = { fg = c.minimap_error_highlight }
+    groups.MinimapWarningHighlight = { fg = c.minimap_warning_highlight }
+    
+    -- Button variant highlights (for floating windows and popups)
+    groups.FloatermBorder = { fg = c.button_secondary_fg, bg = c.button_secondary_bg }
+    groups.ButtonSecondary = { fg = c.button_secondary_fg, bg = c.button_secondary_bg }
+    groups.ButtonSecondaryHover = { fg = c.button_secondary_fg, bg = c.button_secondary_hover_bg }
+    
+    -- Input validation highlights (for command line and prompts)
+    groups.ErrorFloat = { fg = c.input_validation_error_fg, bg = c.red2 }
+    groups.WarningFloat = { fg = c.input_validation_warning_fg, bg = c.yellow6 }
+    groups.MsgAreaError = { fg = c.input_validation_error_fg, bg = c.red2 }
+    groups.MsgAreaWarn = { fg = c.input_validation_warning_fg, bg = c.yellow6 }
+    
+    -- Extension/plugin button highlights (for plugin managers and UI)
+    groups.PluginButton = { fg = c.extension_button_prominent_fg, bg = c.extension_button_prominent_bg }
+    groups.PluginButtonHover = { fg = c.extension_button_prominent_fg, bg = c.extension_button_prominent_hover_bg }
+    groups.LazyButton = { fg = c.extension_button_prominent_fg, bg = c.extension_button_prominent_bg }
+    groups.LazyButtonActive = { fg = c.extension_button_prominent_fg, bg = c.extension_button_prominent_hover_bg }
+    
     return groups
 end
 

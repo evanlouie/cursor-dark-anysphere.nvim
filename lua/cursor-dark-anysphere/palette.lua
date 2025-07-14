@@ -2,6 +2,24 @@ local utils = require('cursor-dark-anysphere.utils')
 
 local M = {}
 
+-- Palette cache for different transparency modes
+local palette_cache = {}
+local cache_generation = 0
+
+-- Cache invalidation when transparency mode changes
+local last_transparency_mode = nil
+
+-- Clear palette cache when needed
+local function clear_palette_cache()
+    palette_cache = {}
+    cache_generation = cache_generation + 1
+end
+
+-- Performance monitoring for palette generation
+local function monitor_palette_generation(mode, generation_func)
+    return utils.monitor_performance("palette_generation_" .. mode, generation_func)
+end
+
 -- Raw colors from VSCode theme
 M.vscode_colors = {
     -- Backgrounds
@@ -136,12 +154,139 @@ M.vscode_colors = {
     marker_navigation_bg = "#ffffff70",
     marker_navigation_error_bg = "#BF616AC0",
     picker_group_border = "#2A2A2A00",
+    
+    -- Minimap colors
+    minimap_gutter_added_bg = "#15ac91",
+    minimap_gutter_modified_bg = "#e5b95c",
+    minimap_gutter_deleted_bg = "#f14c4c",
+    minimap_selection_highlight = "#363636",
+    minimap_error_highlight = "#f14c4c",
+    minimap_warning_highlight = "#ea7620",
+    
+    -- Button variants
+    button_secondary_bg = "#565656",
+    button_secondary_fg = "#ececec",
+    button_secondary_hover_bg = "#767676",
+    
+    -- Input validation colors
+    input_validation_error_fg = "#141414",
+    input_validation_warning_fg = "#141414",
+    
+    -- Extension button colors
+    extension_button_prominent_bg = "#565656",
+    extension_button_prominent_fg = "#FFFFFF",
+    extension_button_prominent_hover_bg = "#767676",
 }
 
--- Get processed colors based on transparency mode
+-- Get processed colors based on transparency mode with caching
 ---@param mode string 'blended', 'transparent', or 'opaque'
 ---@return table colors Processed color palette
 function M.get_colors(mode)
+    mode = mode or "blended"
+    
+    -- Check cache first
+    if palette_cache[mode] and last_transparency_mode == mode then
+        return palette_cache[mode]
+    end
+    
+    -- Clear cache if transparency mode changed
+    if last_transparency_mode and last_transparency_mode ~= mode then
+        clear_palette_cache()
+        -- Clear utils caches too for consistency
+        if utils.clear_caches then
+            utils.clear_caches()
+        end
+    end
+    
+    last_transparency_mode = mode
+    
+    -- Generate palette with performance monitoring
+    local c = monitor_palette_generation(mode, function()
+        local result = {}
+        
+        -- Copy non-alpha colors directly (optimized)
+        for k, v in pairs(M.vscode_colors) do
+            result[k] = v
+        end
+        
+        -- Process alpha colors based on mode using bulk processing
+        local bg = M.vscode_colors.editor_bg
+        local ui_bg = M.vscode_colors.ui_bg
+        
+        -- Group alpha colors by background for bulk processing
+        local bg_colors = {}
+        local ui_bg_colors = {}
+        
+        -- Alpha colors that use editor_bg
+        local editor_bg_keys = {
+            "comment", "diff_added_bg", "diff_removed_bg", "find_match_bg",
+            "find_match_highlight_bg", "find_range_highlight_bg", "selection_bg",
+            "selection_highlight_bg", "inactive_selection_bg", "word_highlight_bg",
+            "word_highlight_strong_bg", "snippet_highlight_bg", "bracket_match_border",
+            "group_border", "editorIndentGuide_bg", "editorWhitespace_fg",
+            "scrollbar_slider_bg", "scrollbar_slider_hover_bg", "scrollbar_slider_active_bg",
+            "merge_current_content_bg", "merge_current_header_bg", "merge_incoming_content_bg",
+            "merge_incoming_header_bg", "group_drop_bg", "editorOverviewRuler_added",
+            "editorOverviewRuler_deleted", "editorOverviewRuler_modified"
+        }
+        
+        -- Alpha colors that use ui_bg
+        local ui_bg_keys = {
+            "ui_fg_dim", "activity_fg", "list_active_selection_bg", "list_inactive_selection_bg",
+            "list_hover_bg", "menubar_selection_bg", "input_bg", "input_placeholder_fg",
+            "terminal_fg", "terminal_selection_bg", "terminal_cursor_bg", "statusbar_fg",
+            "titlebar_fg", "titlebar_inactive_fg", "panel_title_inactive_fg", "sidebar_fg",
+            "tree_indent_guides", "widget_shadow", "peek_match_highlight_bg", "peek_result_line_fg",
+            "marker_navigation_bg", "marker_navigation_error_bg", "tab_unfocused_active_fg",
+            "tab_unfocused_hover_bg", "tab_unfocused_inactive_fg", "list_drop_bg",
+            "panel_border", "sidebar_border", "statusbar_border", "tab_border", "titlebar_border",
+            "tabs_border"
+        }
+        
+        -- Process colors in groups for better cache efficiency
+        for _, key in ipairs(editor_bg_keys) do
+            if M.vscode_colors[key] then
+                bg_colors[key] = M.vscode_colors[key]
+            end
+        end
+        
+        for _, key in ipairs(ui_bg_keys) do
+            if M.vscode_colors[key] then
+                ui_bg_colors[key] = M.vscode_colors[key]
+            end
+        end
+        
+        -- Bulk process colors with same background
+        local processed_bg = utils.process_colors_bulk and utils.process_colors_bulk(bg_colors, bg, mode) or {}
+        local processed_ui_bg = utils.process_colors_bulk and utils.process_colors_bulk(ui_bg_colors, ui_bg, mode) or {}
+        
+        -- Merge processed colors back
+        for k, v in pairs(processed_bg) do
+            result[k] = v
+        end
+        for k, v in pairs(processed_ui_bg) do
+            result[k] = v
+        end
+        
+        -- Handle special cases that weren't in bulk processing
+        result.minimap_find_match = utils.process_color(M.vscode_colors.minimap_find_match, M.vscode_colors.minimap_bg, mode)
+        
+        return result
+    end)
+    
+    -- Use optimized palette processing if available
+    if utils.optimize_color_palette then
+        c = utils.optimize_color_palette(c, mode)
+    end
+    
+    -- Cache the result
+    palette_cache[mode] = c
+    
+    return c
+end
+
+-- Legacy get_colors function for compatibility (fallback if bulk processing fails)
+local function get_colors_legacy(mode)
     mode = mode or "blended"
     local c = {}
     
@@ -251,6 +396,29 @@ function M.get_colors(mode)
     c.editorOverviewRuler_added = utils.process_color(M.vscode_colors.editorOverviewRuler_added, bg, mode)
     c.editorOverviewRuler_deleted = utils.process_color(M.vscode_colors.editorOverviewRuler_deleted, bg, mode)
     c.editorOverviewRuler_modified = utils.process_color(M.vscode_colors.editorOverviewRuler_modified, bg, mode)
+    
+    -- New colors (these are solid colors so no alpha processing needed)
+    -- Minimap colors - these are solid colors, copy directly
+    c.minimap_gutter_added_bg = M.vscode_colors.minimap_gutter_added_bg
+    c.minimap_gutter_modified_bg = M.vscode_colors.minimap_gutter_modified_bg
+    c.minimap_gutter_deleted_bg = M.vscode_colors.minimap_gutter_deleted_bg
+    c.minimap_selection_highlight = M.vscode_colors.minimap_selection_highlight
+    c.minimap_error_highlight = M.vscode_colors.minimap_error_highlight
+    c.minimap_warning_highlight = M.vscode_colors.minimap_warning_highlight
+    
+    -- Button variants - solid colors
+    c.button_secondary_bg = M.vscode_colors.button_secondary_bg
+    c.button_secondary_fg = M.vscode_colors.button_secondary_fg
+    c.button_secondary_hover_bg = M.vscode_colors.button_secondary_hover_bg
+    
+    -- Input validation colors - solid colors
+    c.input_validation_error_fg = M.vscode_colors.input_validation_error_fg
+    c.input_validation_warning_fg = M.vscode_colors.input_validation_warning_fg
+    
+    -- Extension button colors - solid colors
+    c.extension_button_prominent_bg = M.vscode_colors.extension_button_prominent_bg
+    c.extension_button_prominent_fg = M.vscode_colors.extension_button_prominent_fg
+    c.extension_button_prominent_hover_bg = M.vscode_colors.extension_button_prominent_hover_bg
     
     return c
 end
