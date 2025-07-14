@@ -63,6 +63,37 @@ function M.setup(opts)
     -- Apply all highlights
     load_highlights(groups)
     
+    -- Set up autocommand to reapply file explorer highlights after plugin loads
+    -- This ensures our theme highlights take precedence over plugin defaults
+    vim.api.nvim_create_autocmd("FileType", {
+        pattern = {"NvimTree", "neo-tree", "oil"},
+        callback = function()
+            -- Reapply file explorer specific highlights
+            local file_explorer_groups = {}
+            if cfg.plugins.nvim_tree then
+                file_explorer_groups.NvimTreeNormal = { fg = colors.sidebar_fg, bg = cfg.transparencies.sidebar and "NONE" or colors.ui_bg }
+                file_explorer_groups.NvimTreeFileName = { fg = colors.sidebar_fg }
+                file_explorer_groups.NvimTreeFileIcon = { fg = colors.sidebar_fg }
+                file_explorer_groups.NvimTreeFolderName = { fg = colors.sidebar_fg }
+                file_explorer_groups.NvimTreeText = { fg = colors.sidebar_fg }
+                file_explorer_groups.NvimTreeFile = { fg = colors.sidebar_fg }
+            end
+            if cfg.plugins.neo_tree then
+                file_explorer_groups.NeoTreeNormal = { fg = colors.sidebar_fg, bg = cfg.transparencies.sidebar and "NONE" or colors.ui_bg }
+                file_explorer_groups.NeoTreeFileName = { fg = colors.sidebar_fg }
+                file_explorer_groups.NeoTreeDirectoryName = { fg = colors.sidebar_fg }
+            end
+            if cfg.plugins.oil then
+                file_explorer_groups.OilFile = { fg = colors.sidebar_fg }
+                file_explorer_groups.OilDir = { fg = colors.blue2 }
+            end
+            
+            for group, settings in pairs(file_explorer_groups) do
+                vim.api.nvim_set_hl(0, group, settings)
+            end
+        end,
+    })
+    
     -- Set terminal colors
     if vim.o.termguicolors then
         vim.g.terminal_color_0 = colors.gray1

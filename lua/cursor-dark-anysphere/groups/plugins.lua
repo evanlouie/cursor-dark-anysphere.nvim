@@ -29,6 +29,9 @@ function M.setup(c, config)
     if config.plugins.nvim_tree then
         groups.NvimTreeNormal = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
         groups.NvimTreeNormalNC = { fg = c.sidebar_fg, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
+        groups.NvimTreeNormalFloat = { fg = c.sidebar_fg, bg = c.ui_bg }
+        groups.NvimTreeCursorLine = { bg = c.list_active_selection_bg }
+        groups.NvimTreeCursorColumn = { bg = c.list_active_selection_bg }
         groups.NvimTreeRootFolder = { fg = c.blue2, bold = true }
         groups.NvimTreeGitDirty = { fg = c.yellow1 }
         groups.NvimTreeGitNew = { fg = c.green1 }
@@ -59,6 +62,21 @@ function M.setup(c, config)
         groups.NvimTreeReactFile = { fg = c.sidebar_fg }
         groups.NvimTreeHtmlFile = { fg = c.sidebar_fg }
         groups.NvimTreeCssFile = { fg = c.sidebar_fg }
+        
+        -- Additional nvim-tree highlight groups that might be used
+        groups.NvimTreeText = { fg = c.sidebar_fg }
+        groups.NvimTreeFile = { fg = c.sidebar_fg }
+        groups.NvimTreeFileRenamed = { fg = c.yellow1 }
+        groups.NvimTreeFileStaged = { fg = c.green1 }
+        groups.NvimTreeFileDirty = { fg = c.yellow1 }
+        groups.NvimTreeFileIgnored = { fg = c.gray4 }
+        groups.NvimTreeFileMerge = { fg = c.orange }
+        groups.NvimTreeFileNew = { fg = c.green1 }
+        groups.NvimTreeEndOfBuffer = { fg = c.ui_bg }
+        groups.NvimTreeCursor = { bg = c.list_active_selection_bg }
+        groups.NvimTreeStatusLine = { fg = c.statusbar_fg, bg = c.ui_bg }
+        groups.NvimTreeStatusLineNC = { fg = c.gray4, bg = c.ui_bg }
+        
         groups.NvimTreeWinSeparator = { fg = c.sidebar_border, bg = config.transparencies.sidebar and "NONE" or c.ui_bg }
         groups.NvimTreeWindowPicker = { fg = c.white, bg = c.blue1, bold = true }
     end
